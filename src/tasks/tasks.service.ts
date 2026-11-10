@@ -4,10 +4,14 @@ import { TasksEntity } from './tasks.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskResponseDto } from './dto/task-response.dto';
+import { UsersRepository } from '../users/users.repository'; // 1. Importamos UsersRepository
 
 @Injectable()
 export class TasksService {
-  constructor(private readonly tasksRepository: TasksRepository) {}
+  constructor(
+    private readonly tasksRepository: TasksRepository,
+    private readonly usersRepository: UsersRepository, // 2. Inyección de dependencia
+  ) {}
 
   async getAllTasks(): Promise<TaskResponseDto[]> {
     const tasks = await this.tasksRepository.findAll();
@@ -22,6 +26,14 @@ export class TasksService {
   }
 
   async createOneTask(createTaskDto: CreateTaskDto): Promise<TaskResponseDto> {
+    // 3. Validamos la existencia del usuario
+    const userExists = await this.usersRepository.findById(createTaskDto.idUser);
+    if (!userExists) {
+      throw new NotFoundException(
+        `El usuario con ID "${createTaskDto.idUser}" no existe`,
+      );
+    }
+
     const newTask = await this.tasksRepository.create({
       description: createTaskDto.descriptionTask,
       userId: createTaskDto.idUser,
@@ -48,12 +60,12 @@ export class TasksService {
     return this.mapToResponseDto(updatedTask);
   }
 
-    private mapToResponseDto(task: TasksEntity): TaskResponseDto {
+  private mapToResponseDto(task: TasksEntity): TaskResponseDto {
     return {
-        idTask: task.id,
-        descriptionTask: task.description,
-        completedTask: task.isCompleted(),
-        idUser: task.userId,
+      idTask: task.id,
+      descriptionTask: task.description,
+      completedTask: task.isCompleted(),
+      idUser: task.userId,
     };
-    }
+  }
 }

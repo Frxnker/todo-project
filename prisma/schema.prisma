@@ -11,7 +11,8 @@ model Task {
   id          String  @id @default(auto()) @map("_id") @db.ObjectId
   description String
   completed   Boolean @default(false)
-  userId      String
+  userId      String  @db.ObjectId // ID del usuario propietario
+  user        User    @relation(fields: [userId], references: [id])
 }
 
 model User {
@@ -21,4 +22,5 @@ model User {
   login     String  @unique
   password  String
   admin     Boolean @default(false)
+  tasks     Task[]  // Relación 1-N: un usuario tiene muchas tareas
 }
