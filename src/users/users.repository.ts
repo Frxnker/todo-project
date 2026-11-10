@@ -1,58 +1,58 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { UsersEntity } from './users.entity';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(): Promise<UsersEntity[]> {
-    const users = await this.prisma.user.findMany();
-    return users.map((user) => UsersEntity.fromPrisma(user));
+  async create(user: User): Promise<User> {
+    const prismaUser = await this.prisma.user.create({
+      data: {
+        firstname: user.firstname,
+        surname: user.surname,
+        login: user.login,
+        password: user.password,
+        admin: user.admin ?? false,
+      },
+    });
+    return User.fromPrisma(prismaUser);
   }
 
-  async findById(id: string): Promise<UsersEntity | null> {
-    const prismaUser = await this.prisma.user.findUnique({ where: { id } });
-    if (!prismaUser) return null;
-    return UsersEntity.fromPrisma(prismaUser);
+  async findAll(): Promise<User[]> {
+    const prismaUsers = await this.prisma.user.findMany();
+    return prismaUsers.map((u) => User.fromPrisma(u));
   }
 
-  async findByLogin(login: string): Promise<UsersEntity | null> {
-    const prismaUser = await this.prisma.user.findUnique({ where: { login } });
-    if (!prismaUser) return null;
-    return UsersEntity.fromPrisma(prismaUser);
+  async findById(id: string): Promise<User | null> {
+    const prismaUser = await this.prisma.user.findUnique({
+      where: { id },
+    });
+    return prismaUser ? User.fromPrisma(prismaUser) : null;
   }
 
-  async create(data: {
-    firstname: string;
-    surname: string;
-    login: string;
-    password: string;
-    admin?: boolean;
-  }): Promise<UsersEntity> {
-    const prismaUser = await this.prisma.user.create({ data });
-    return UsersEntity.fromPrisma(prismaUser);
+  async findByLogin(login: string): Promise<User | null> {
+    const prismaUser = await this.prisma.user.findUnique({
+      where: { login },
+    });
+    return prismaUser ? User.fromPrisma(prismaUser) : null;
   }
 
   async update(
     id: string,
-    data: {
-      firstname?: string;
-      surname?: string;
-      login?: string;
-      password?: string;
-      admin?: boolean;
-    },
-  ): Promise<UsersEntity> {
-    const updatedPrismaUser = await this.prisma.user.update({
+    data: { firstname?: string; surname?: string; password?: string },
+  ): Promise<User> {
+    const prismaUser = await this.prisma.user.update({
       where: { id },
       data,
     });
-    return UsersEntity.fromPrisma(updatedPrismaUser);
+    return User.fromPrisma(prismaUser);
   }
 
-  async delete(id: string): Promise<UsersEntity> {
-    const deletedPrismaUser = await this.prisma.user.delete({ where: { id } });
-    return UsersEntity.fromPrisma(deletedPrismaUser);
+  async delete(id: string): Promise<User> {
+    const prismaUser = await this.prisma.user.delete({
+      where: { id },
+    });
+    return User.fromPrisma(prismaUser);
   }
 }

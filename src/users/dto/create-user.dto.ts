@@ -1,29 +1,36 @@
-import { IsString, IsNotEmpty, IsBoolean, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateUserDto {
-  @ApiProperty({ description: 'Nombre del usuario', example: 'Francisco' })
+  @ApiProperty({
+    description: 'Nombre del usuario',
+    example: 'Laura',
+  })
   @IsString()
   @IsNotEmpty()
-  firstnameUser!: string;
+  userFirstname!: string;
 
-  @ApiProperty({ description: 'Apellidos del usuario', example: 'López Lobanova' })
+  @ApiProperty({
+    description: 'Apellidos del usuario',
+    example: 'García',
+  })
   @IsString()
   @IsNotEmpty()
-  surnameUser!: string;
+  userSurname!: string;
 
-  @ApiProperty({ description: 'Login único del usuario', example: 'frank' })
+  @ApiProperty({
+    description: 'Nombre de usuario único para inicio de sesión',
+    example: 'lgarcia',
+  })
   @IsString()
   @IsNotEmpty()
-  loginUser!: string;
+  userLogin!: string;
 
-  @ApiProperty({ description: 'Contraseña del usuario', example: '123456' })
+  @ApiProperty({
+    description: 'Contraseña del usuario',
+    example: 'Password123!',
+  })
   @IsString()
   @IsNotEmpty()
-  passwordUser!: string;
-
-  @ApiProperty({ description: 'Si el usuario es administrador', example: false, required: false })
-  @IsBoolean()
-  @IsOptional()
-  adminUser?: boolean = false;
+  userPassword!: string;
 }

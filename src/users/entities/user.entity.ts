@@ -1,19 +1,19 @@
 import { User as PrismaUser } from '@prisma/client';
 
-export class UsersEntity {
-  id!: string;
+export class User {
+  id?: string;
   firstname!: string;
   surname!: string;
   login!: string;
   password!: string;
   admin!: boolean;
 
-  constructor(partial?: Partial<UsersEntity>) {
+  constructor(partial?: Partial<User>) {
     Object.assign(this, partial);
   }
 
-  static fromPrisma(prismaUser: PrismaUser): UsersEntity {
-    return new UsersEntity({
+  static fromPrisma(prismaUser: PrismaUser): User {
+    return new User({
       id: prismaUser.id,
       firstname: prismaUser.firstname,
       surname: prismaUser.surname,
