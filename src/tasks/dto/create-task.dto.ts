@@ -7,10 +7,11 @@ export class CreateTaskDto {
   @IsNotEmpty()
   descriptionTask!: string;
 
-  @ApiProperty({ description: 'Id del usuario propietario de la tarea', example: '65c2f8e1a2b3c4d5e6f7a8b9' })
-  @IsString()
-  @IsNotEmpty()
-  idUser!: string;
+  // Ya no se envía: el id del usuario se obtiene del token JWT
+  // @ApiProperty({ description: 'Id del usuario propietario de la tarea', example: '65c2f8e1a2b3c4d5e6f7a8b9' })
+  // @IsString()
+  // @IsNotEmpty()
+  // idUser!: string;
 
   @ApiProperty({ description: 'Estado de la tarea (si se ha completado o no)', example: false, required: false })
   @IsBoolean()

@@ -4,17 +4,18 @@ import { TasksEntity } from './tasks.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskResponseDto } from './dto/task-response.dto';
-import { UsersRepository } from '../users/users.repository'; // 1. Importamos UsersRepository
+import { UsersRepository } from '../users/users.repository';
 
 @Injectable()
 export class TasksService {
   constructor(
     private readonly tasksRepository: TasksRepository,
-    private readonly usersRepository: UsersRepository, // 2. Inyección de dependencia
+    private readonly usersRepository: UsersRepository,
   ) {}
 
-  async getAllTasks(): Promise<TaskResponseDto[]> {
-    const tasks = await this.tasksRepository.findAll();
+  // Solo las tareas del usuario autenticado
+  async getAllTasks(userId: string): Promise<TaskResponseDto[]> {
+    const tasks = await this.tasksRepository.findByUserId(userId);
     return tasks.map((task) => this.mapToResponseDto(task));
   }
 
@@ -25,25 +26,26 @@ export class TasksService {
     return this.mapToResponseDto(task);
   }
 
-  async createOneTask(createTaskDto: CreateTaskDto): Promise<TaskResponseDto> {
-    // 3. Validamos la existencia del usuario
-    const userExists = await this.usersRepository.findById(createTaskDto.idUser);
+  // El userId llega del token, no del body
+  async createOneTask(
+    createTaskDto: CreateTaskDto,
+    userId: string,
+  ): Promise<TaskResponseDto> {
+    const userExists = await this.usersRepository.findById(userId);
     if (!userExists) {
-      throw new NotFoundException(
-        `El usuario con ID "${createTaskDto.idUser}" no existe`,
-      );
+      throw new NotFoundException(`El usuario con ID "${userId}" no existe`);
     }
 
     const newTask = await this.tasksRepository.create({
       description: createTaskDto.descriptionTask,
-      userId: createTaskDto.idUser,
+      userId: userId, // Usamos el id del usuario autenticado
       completed: createTaskDto.completedTask ?? false,
     });
     return this.mapToResponseDto(newTask);
   }
 
   async deleteOneTask(id: string): Promise<TaskResponseDto> {
-    await this.getOneTask(id); // Reutilizamos la verificación de existencia
+    await this.getOneTask(id);
     const deletedTask = await this.tasksRepository.delete(id);
     return this.mapToResponseDto(deletedTask);
   }
@@ -52,7 +54,7 @@ export class TasksService {
     id: string,
     updateTaskDto: UpdateTaskDto,
   ): Promise<TaskResponseDto> {
-    await this.getOneTask(id); // Reutilizamos la verificación de existencia
+    await this.getOneTask(id);
     const updatedTask = await this.tasksRepository.update(id, {
       description: updateTaskDto.descriptionTask,
       completed: updateTaskDto.completedTask,

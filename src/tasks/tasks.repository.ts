@@ -17,6 +17,16 @@ export class TasksRepository {
     return TasksEntity.fromPrisma(prismaTask);
   }
 
+  // Devuelve solo las tareas de un usuario
+  async findByUserId(userId: string): Promise<TasksEntity[]> {
+    const tasks = await this.prisma.task.findMany({
+      where: {
+        userId: userId,
+      },
+    });
+    return tasks.map((task) => TasksEntity.fromPrisma(task));
+  }
+
   async create(data: {
     description: string;
     completed?: boolean;

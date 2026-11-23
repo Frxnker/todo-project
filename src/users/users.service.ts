@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response';
@@ -20,11 +21,13 @@ export class UsersService {
     if (existingUser) {
       throw new ConflictException('El login ya existe!');
     }
+    // Aplicamos 10 rondas de salt a la contraseña
+    const hashedPassword = await bcrypt.hash(createUserDto.userPassword, 10);
     const newUser = new User({
       firstname: createUserDto.userFirstname,
       surname: createUserDto.userSurname,
       login: createUserDto.userLogin,
-      password: createUserDto.userPassword,
+      password: hashedPassword,
       admin: false,
     });
     const createdUser = await this.usersRepository.create(newUser);
@@ -55,7 +58,7 @@ export class UsersService {
       }),
       ...(updateUserDto.userSurname && { surname: updateUserDto.userSurname }),
       ...(updateUserDto.userPassword && {
-        password: updateUserDto.userPassword,
+        password: await bcrypt.hash(updateUserDto.userPassword, 10),
       }),
     });
     return UserResponseDto.fromEntity(updatedUser);
