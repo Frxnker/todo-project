@@ -29,11 +29,6 @@ export class TasksController {
     return this.ts.getAllTasks(userId);
   }
 
-  @Get(':id')
-  show(@Param('id') id: string): Promise<TaskResponseDto> {
-    return this.ts.getOneTask(id);
-  }
-
   @Post()
   async createOneTask(
     @Request() req: any,
@@ -43,16 +38,28 @@ export class TasksController {
     return this.ts.createOneTask(createTaskDto, userId);
   }
 
+  @Get(':id')
+  async getOneTask(
+    @Param('id') id: string,
+    @Request() req: any,
+  ): Promise<TaskResponseDto> {
+    return this.ts.getOneTask(id, req.user.userId);
+  }
+
   @Patch(':id')
-  async update(
+  async updateOneTask(
     @Param('id') id: string,
     @Body() updateTaskDto: UpdateTaskDto,
+    @Request() req: any,
   ): Promise<TaskResponseDto> {
-    return this.ts.updateOneTask(id, updateTaskDto);
+    return this.ts.updateOneTask(id, updateTaskDto, req.user.userId);
   }
 
   @Delete(':id')
-  async destroy(@Param('id') id: string): Promise<TaskResponseDto> {
-    return this.ts.deleteOneTask(id);
+  async deleteOneTask(
+    @Param('id') id: string,
+    @Request() req: any,
+  ): Promise<TaskResponseDto> {
+    return this.ts.deleteOneTask(id, req.user.userId);
   }
-} 
+}

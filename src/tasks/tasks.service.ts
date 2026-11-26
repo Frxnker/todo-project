@@ -19,10 +19,14 @@ export class TasksService {
     return tasks.map((task) => this.mapToResponseDto(task));
   }
 
-  async getOneTask(id: string): Promise<TaskResponseDto> {
-    const task = await this.tasksRepository.findById(id);
-    if (!task)
-      throw new NotFoundException(`La tarea con el ID "${id}" no existe`);
+  // Una tarea, solo si pertenece al usuario autenticado
+  async getOneTask(id: string, userId: string): Promise<TaskResponseDto> {
+    const task = await this.tasksRepository.findByIdAndUserId(id, userId);
+    if (!task) {
+      throw new NotFoundException(
+        `La tarea con el ID "${id}" no existe o no te pertenece`,
+      );
+    }
     return this.mapToResponseDto(task);
   }
 
@@ -44,21 +48,29 @@ export class TasksService {
     return this.mapToResponseDto(newTask);
   }
 
-  async deleteOneTask(id: string): Promise<TaskResponseDto> {
-    await this.getOneTask(id);
-    const deletedTask = await this.tasksRepository.delete(id);
+  async deleteOneTask(id: string, userId: string): Promise<TaskResponseDto> {
+    await this.getOneTask(id, userId); // Validamos que existe y le pertenece
+    const deletedTask = await this.tasksRepository.deleteByIdAndUserId(
+      id,
+      userId,
+    );
     return this.mapToResponseDto(deletedTask);
   }
 
   async updateOneTask(
     id: string,
     updateTaskDto: UpdateTaskDto,
+    userId: string,
   ): Promise<TaskResponseDto> {
-    await this.getOneTask(id);
-    const updatedTask = await this.tasksRepository.update(id, {
-      description: updateTaskDto.descriptionTask,
-      completed: updateTaskDto.completedTask,
-    });
+    await this.getOneTask(id, userId); // Validamos que existe y le pertenece
+    const updatedTask = await this.tasksRepository.updateByIdAndUserId(
+      id,
+      userId,
+      {
+        description: updateTaskDto.descriptionTask,
+        completed: updateTaskDto.completedTask,
+      },
+    );
     return this.mapToResponseDto(updatedTask);
   }
 

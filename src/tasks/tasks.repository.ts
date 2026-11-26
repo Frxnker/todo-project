@@ -27,6 +27,20 @@ export class TasksRepository {
     return tasks.map((task) => TasksEntity.fromPrisma(task));
   }
 
+  // Busca una tarea específica perteneciente al usuario especificado
+  async findByIdAndUserId(
+    id: string,
+    userId: string,
+  ): Promise<TasksEntity | null> {
+    const task = await this.prisma.task.findFirst({
+      where: {
+        id: id,
+        userId: userId,
+      },
+    });
+    return task ? TasksEntity.fromPrisma(task) : null;
+  }
+
   async create(data: {
     description: string;
     completed?: boolean;
@@ -47,8 +61,35 @@ export class TasksRepository {
     return TasksEntity.fromPrisma(updatedPrismaTask);
   }
 
+  // Actualiza únicamente si pertenece a dicho usuario
+  async updateByIdAndUserId(
+    id: string,
+    userId: string,
+    data: { description?: string; completed?: boolean },
+  ): Promise<TasksEntity> {
+    const updatedTask = await this.prisma.task.update({
+      where: {
+        id: id,
+        userId: userId,
+      },
+      data: data,
+    });
+    return TasksEntity.fromPrisma(updatedTask);
+  }
+
   async delete(id: string): Promise<TasksEntity> {
     const deletedPrismaTask = await this.prisma.task.delete({ where: { id } });
     return TasksEntity.fromPrisma(deletedPrismaTask);
+  }
+
+  // Elimina únicamente si pertenece a dicho usuario
+  async deleteByIdAndUserId(id: string, userId: string): Promise<TasksEntity> {
+    const deletedTask = await this.prisma.task.delete({
+      where: {
+        id: id,
+        userId: userId,
+      },
+    });
+    return TasksEntity.fromPrisma(deletedTask);
   }
 }
